@@ -18,6 +18,9 @@ dynamic = [
 ]
 dependencies = [
   "dvc[ssh]>=3.67.1",
+  "loguru>=0.7.3",
+  "snakemake>=9.24",
+  "typer>=0.27.1",
 ]
 
 [tool.hatch]

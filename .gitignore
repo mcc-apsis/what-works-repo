@@ -1,0 +1,6 @@
+.snakemake/
+
+data/
+.dvc/tmp/
+.dvc/cache/
+
