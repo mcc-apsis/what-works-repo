@@ -4,3 +4,5 @@ data/
 .dvc/tmp/
 .dvc/cache/
 
+*.env
+!*.env.example
