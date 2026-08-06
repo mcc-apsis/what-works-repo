@@ -36,7 +36,7 @@ configfile: "config/snakemake.yaml"
 
 rule import_scopus_to_nacsos:
     input:
-        "data/processed/scopus/sample_20_nacsos.jsonl"
+        "data/processed/scopus/sample_20000_nacsos.jsonl"
     output:
         "data/processed/scopus/import_complete.txt"
     shell:
