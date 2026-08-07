@@ -1,48 +1,44 @@
-import getpass
-from builtins import input as user_input
+from what_works_repo.settings import settings
 
-default_user = getpass.getuser()
-USERNAME = user_input(f"Username for ts01.pik-potsdam.de [{default_user}]: ") or default_user
-
-
+rule all:
+    input:
+        "data/processed/scopus/import_complete.txt"
 
 rule fetch_scopus_query:
     output: 
         directory("data/raw/scopus/")
     shell:
-        'rsync -av --progress -e "ssh -o ProxyJump={USERNAME}@ts01.pik-potsdam.de" {USERNAME}@se164:/data/academic-api/data/results/4/responses/*.jsonl {output}/'
+        f'rsync -av --progress -e "ssh -o ProxyJump={settings.ts01_username}@ts01.pik-potsdam.de" {settings.ts01_username}@se164:/data/academic-api/data/results/4/responses/*.jsonl {output}/'
 
 rule sample_scopus_records:
     input:
         "data/raw/scopus"
     output:
-        directory("data/processed/scopus")
+        f"data/processed/scopus/sample_{settings.sample_size}.jsonl"
     shell:
         "uv run python src/what-works-repo/imports/sample_scopus_records.py "
         "--input-dir {input} "
-        "--output-dir {output} "
-        "--sample-size 20000"
+        "--output-dir data/processed/scopus "
+        f"--sample-size {settings.sample_size}"
 
 rule transform_scopus_to_nacsos:
     input:
-        "data/processed/scopus/sample_20000.jsonl"
+        f"data/processed/scopus/sample_{settings.sample_size}.jsonl"
     output:
-        "data/processed/scopus/sample_20000_nacsos.jsonl"
+        f"data/processed/scopus/sample_{settings.sample_size}_nacsos.jsonl"
     shell:
         "uv run python src/what-works-repo/imports/process_scopus_to_nacsos.py "
         "{input} {output}"
 
-configfile: "config/snakemake.yaml"
-
 rule import_scopus_to_nacsos:
     input:
-        "data/processed/scopus/sample_20000_nacsos.jsonl"
+        f"data/processed/scopus/sample_{settings.sample_size}_nacsos.jsonl"
     output:
         "data/processed/scopus/import_complete.txt"
     shell:
         "uv run nacsos import ACADEMIC "
         "--source {input} "
-        "--project-id {config[nacsos][project_id]} "
+        f"--project-id {settings.nacsos__project_id} "
         "--config-file config/.env "
-        "--import-id {config[nacsos][import_id]} "
+        f"--import-id {settings.nacsos__import_id} "
         "2>&1 | tee {output}"

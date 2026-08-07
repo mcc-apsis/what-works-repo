@@ -19,22 +19,35 @@ dynamic = [
 dependencies = [
   "dvc[ssh]>=3.67.1",
   "loguru>=0.7.3",
+  "pydantic-settings>=2.14.2",
   "snakemake>=9.24",
   "typer>=0.27",
+]
+optional-dependencies.docs = [
+  "mkdocs-material>=9.7.7",
 ]
 optional-dependencies.nacsos = [
   "nacsos-data[scripts,utils]",
 ]
 
+[dependency-groups]
+dev = [
+  "what-works-repo",
+]
+
 [tool.hatch]
 version.source = "vcs"
 build.targets.wheel.packages = [
-  "src/what-works-repo",
+  "src/what_works_repo",
 ]
 
 [tool.uv]
 sources.nacsos_data = [
   { git = "git+ssh://git@gitlab.pik-potsdam.de/mcc-apsis/nacsos/nacsos-data.git", tag = "v0.24.53" },
+]
+sources.what_works_repo = { workspace = true, editable = true }
+workspace.members = [
+  ".",
 ]
 
 [tool.ruff]

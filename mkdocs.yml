@@ -1,0 +1,8 @@
+site_name: What Works Repo
+site_url: https://mcc-apsis.github.io/what-works-repo/
+repo_url: https://github.com/mcc-apsis/what-works-repo
+theme:
+  name: material
+nav:
+  - Home: index.md
+  - Workflow: workflow.md
