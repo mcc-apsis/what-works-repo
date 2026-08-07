@@ -20,3 +20,8 @@ repos:
     rev: ac85803d0443afba1e0700690366fd2d39e02580 # v0.0.65
     hooks:
       - id: ty
+
+  - repo: https://github.com/snakemake/snakefmt
+    rev: fdfb5d929c2a630a7c705a3d70dbdd69ed44334b  # v2.0.3
+    hooks:
+      - id: snakefmt

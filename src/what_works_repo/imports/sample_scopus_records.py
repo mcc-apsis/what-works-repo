@@ -5,14 +5,17 @@ from pathlib import Path
 import typer
 from loguru import logger
 
+from what_works_repo.imports.models import ScopusAcademicItem
+
 
 def main(input_dir: Path, output_dir: Path, sample_size: int = 20000, seed: int = 42):
     output_dir.mkdir(parents=True, exist_ok=True)
-    output_file = output_dir / f"sample_{sample_size}.jsonl"
+    output_file = output_dir / f"batch_sample_{sample_size}.jsonl"
 
     reservoir = []
     eid_seen = set()
     duplicate_count = 0
+    unique_count = 0
     total_records = 0
 
     random.seed(seed)
@@ -28,13 +31,14 @@ def main(input_dir: Path, output_dir: Path, sample_size: int = 20000, seed: int 
                     duplicate_count += 1
                 else:
                     eid_seen.add(eid)
+                    unique_count += 1
 
-                if len(reservoir) < sample_size:
-                    reservoir.append(record)
-                else:
-                    j = random.randint(0, total_records - 1)
-                    if j < sample_size:
-                        reservoir[j] = record
+                    if len(reservoir) < sample_size:
+                        reservoir.append(record)
+                    else:
+                        j = random.randint(0, unique_count - 1)
+                        if j < sample_size:
+                            reservoir[j] = record
 
         logger.info(
             f"Processed {jsonl_file}. Duplicates: "
@@ -51,7 +55,8 @@ def main(input_dir: Path, output_dir: Path, sample_size: int = 20000, seed: int 
 
     with output_file.open("w") as f:
         for record in reservoir:
-            f.write(json.dumps(record) + "\n")
+            academic_item = ScopusAcademicItem.model_validate(record)
+            f.write(academic_item.model_dump_json() + "\n")
 
 
 if __name__ == "__main__":

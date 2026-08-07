@@ -1,7 +1,3 @@
-import json
-from pathlib import Path
-
-import typer
 from nacsos_data.models.items.academic import AcademicAuthorModel, AcademicItemModel
 from pydantic import field_validator, model_validator
 
@@ -51,18 +47,3 @@ class ScopusAcademicItem(AcademicItemModel):
                 for a in v
             ]
         return v
-
-
-def main(input_file: Path, output_file: Path):
-    """Read jsonl of scopus records and translate to"""
-    output_file.parent.mkdir(parents=True, exist_ok=True)
-
-    with open(input_file) as inf, open(output_file, "w") as outf:
-        for line in inf:
-            scopus_dict = json.loads(line)
-            item = ScopusAcademicItem.model_validate(scopus_dict)
-            outf.write(item.model_dump_json() + "\n")
-
-
-if __name__ == "__main__":
-    typer.run(main)
