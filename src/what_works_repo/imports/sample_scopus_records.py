@@ -8,9 +8,8 @@ from loguru import logger
 from what_works_repo.imports.models import ScopusAcademicItem
 
 
-def main(input_dir: Path, output_dir: Path, sample_size: int = 20000, seed: int = 42):
-    output_dir.mkdir(parents=True, exist_ok=True)
-    output_file = output_dir / f"batch_sample_{sample_size}.jsonl"
+def main(input_dir: Path, output_file: Path, sample_size: int = 20000, seed: int = 42):
+    output_file.parent.mkdir(parents=True, exist_ok=True)
 
     reservoir = []
     eid_seen = set()

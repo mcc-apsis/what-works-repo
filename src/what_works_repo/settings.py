@@ -1,7 +1,12 @@
 import os
 
-from pydantic import Field
+from pydantic import BaseModel, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict, YamlConfigSettingsSource
+
+
+class NacsosSettings(BaseModel):
+    project_id: str
+    import_id: str
 
 
 class Settings(BaseSettings):
@@ -11,8 +16,7 @@ class Settings(BaseSettings):
 
     ts01_username: str = Field(default_factory=lambda: os.getenv("USER", ""))
 
-    nacsos__project_id: str = ""
-    nacsos__import_id: str = ""
+    nacsos: NacsosSettings
     sample_size: int = 20000
 
     @classmethod
