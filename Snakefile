@@ -1,3 +1,5 @@
+import os
+
 from what_works_repo.settings import settings
 from what_works_repo.constants import BATCH_DIR, DEET_DIR, STOPPING_CRITERIA_TRIGGERED
 
@@ -101,14 +103,6 @@ rule export_batch_annotations:
         CURRENT_BATCH_ANNOTATIONS,
 
 
-rule check_stopping_criteria:
-    """Check if stopping criteria is met."""
-    input:
-        CURRENT_BATCH_ANNOTATIONS,
-    output:
-        STOPPING_CRITERIA_TRIGGERED,
-
-
 rule create_deet_subproject:
     """Create a deet project that uses annotations as gold standard data"""
     input:
@@ -144,6 +138,14 @@ rule export_batch_resolved_deet_annotations:
         CURRENT_BATCH_DEET_FINALISED,
     output:
         CURRENT_BATCH_DEET_RESOLVED_ANNOTATIONS,
+
+
+rule check_stopping_criteria:
+    """Check if stopping criteria is met."""
+    input:
+        CURRENT_BATCH_DEET_RESOLVED_ANNOTATIONS,
+    output:
+        STOPPING_CRITERIA_TRIGGERED,
 
 
 rule train_prioritisation_model:
