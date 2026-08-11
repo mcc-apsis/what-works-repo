@@ -17,6 +17,7 @@ dynamic = [
   "version",
 ]
 dependencies = [
+  "data-extraction-evaluation-toolkit",
   "dvc[ssh]>=3.67.1",
   "loguru>=0.7.3",
   "pydantic-settings>=2.14.2",
@@ -43,6 +44,7 @@ build.targets.wheel.packages = [
 ]
 
 [tool.uv]
+sources.data-extraction-evaluation-toolkit = { git = "https://github.com/destiny-evidence/data-extraction-evaluation-toolkit.git", rev = "feature/%2317-train-test-splits" }
 sources.nacsos_data = [
   { git = "git+ssh://git@gitlab.pik-potsdam.de/mcc-apsis/nacsos/nacsos-data.git", tag = "v0.24.53" },
 ]
