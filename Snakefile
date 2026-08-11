@@ -113,6 +113,10 @@ rule create_deet_subproject:
         CURRENT_BATCH_ANNOTATIONS,
     output:
         CURRENT_BATCH_DEET_PROJECT_CONFIG,
+    shell:
+        "uv run python src/what_works_repo/deet_orchestration/create_deet_subproject.py "
+        "{input} "
+        "{output} "
 
 
 rule finalise_deet_run:

@@ -10,3 +10,7 @@ data/
 site/
 
 **/__pycache__/*
+
+deet.log
+
+llm_annotations.json
