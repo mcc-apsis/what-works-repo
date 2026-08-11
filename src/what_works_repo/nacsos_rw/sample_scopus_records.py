@@ -1,3 +1,5 @@
+"""Read scopus query results, deduplicate, sample, and write to NACSOS format."""
+
 import json
 import random
 from pathlib import Path
@@ -5,7 +7,7 @@ from pathlib import Path
 import typer
 from loguru import logger
 
-from what_works_repo.imports.models import ScopusAcademicItem
+from what_works_repo.nacsos_rw.models import ScopusAcademicItem
 
 
 def main(input_dir: Path, output_file: Path, sample_size: int = 20000, seed: int = 42):
