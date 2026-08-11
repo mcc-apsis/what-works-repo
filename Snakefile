@@ -5,7 +5,7 @@ from what_works_repo.constants import BATCH_DIR, DEET_DIR, STOPPING_CRITERIA_TRI
 
 
 def get_next_batch_number():
-    existing_batches = list(BATCH_DIR.glob("batch_*.jsonl"))
+    existing_batches = list(BATCH_DIR.glob("batch_*/items.jsonl"))
     return len(existing_batches) + 1
 
 
@@ -14,12 +14,12 @@ CURRENT_BATCH = NEXT_BATCH - 1
 
 CURRENT_BATCH_DIR = BATCH_DIR / f"batch_{CURRENT_BATCH}"
 CURRENT_BATCH_ITEMS = CURRENT_BATCH_DIR / "items.jsonl"
-CURRENT_BATCH_ANNOTATIONS = CURRENT_BATCH_DIR / "annotations.jsonl"
+CURRENT_BATCH_ANNOTATIONS = CURRENT_BATCH_DIR / "annotations.csv"
 CURRENT_BATCH_IMPORTED = CURRENT_BATCH_DIR / "imported.txt"
 CURRENT_BATCH_MODEL = CURRENT_BATCH_DIR / "model.txt"  # TODO define model serialisation
 CURRENT_BATCH_DEET_PROJECT_DIR = DEET_DIR / f"batch_{CURRENT_BATCH}"
 CURRENT_BATCH_DEET_PROJECT_CONFIG = CURRENT_BATCH_DEET_PROJECT_DIR / "project.yaml"
-CURRENT_BATCH_SCOPE_ID_FILE = CURRENT_BATCH_DIR / "assignment_scope_id.txt"
+CURRENT_BATCH_SCOPE_ID_FILE = CURRENT_BATCH_DIR / "assignment_scope_ids.json"
 CURRENT_BATCH_DEET_FINALISED = CURRENT_BATCH_DEET_PROJECT_DIR / "finalised_run.txt"
 CURRENT_BATCH_DEET_ASSIGNMENT_SCOPE = CURRENT_BATCH_DIR / "deet_assignment_scope_id.txt"
 CURRENT_BATCH_DEET_RESOLVED_ANNOTATIONS = (
@@ -42,9 +42,9 @@ rule prepare_sample_records:
     output:
         BATCH_DIR / "batch_1" / "items.jsonl",
     shell:
-        "uv run python src/what_works_repo/imports/sample_scopus_records.py "
+        "uv run python src/what_works_repo/nacsos_rw/sample_scopus_records.py "
         "{input} "
-        f"{BATCH_DIR}/batch_1/items.jsonl "
+        f"{output} "
         f"--sample-size {settings.sample_size}"
 
 
@@ -101,6 +101,10 @@ rule export_batch_annotations:
         CURRENT_BATCH_SCOPE_ID_FILE,
     output:
         CURRENT_BATCH_ANNOTATIONS,
+    shell:
+        "uv run python src/what_works_repo/nacsos_rw/export_human_annotations.py "
+        "{input} "
+        "{output} "
 
 
 rule create_deet_subproject:
