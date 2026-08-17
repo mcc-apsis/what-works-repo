@@ -3,6 +3,7 @@
 data/
 .dvc/tmp/
 .dvc/cache/
+.dvc/config.local
 
 *.env
 !*.env.example
