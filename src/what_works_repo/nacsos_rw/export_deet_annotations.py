@@ -3,6 +3,7 @@ from pathlib import Path
 
 import typer
 from nacsos_data.db import get_engine_async
+from nacsos_data.db.crud.annotations import read_assignment_counts_for_scope
 from nacsos_data.models.nql import AssignmentFilter
 from nacsos_data.util.annotations.export import wide_export_table
 
@@ -14,6 +15,16 @@ async def export(
     deet_scope_id: str, resolution_scope_id: str | None, output_path: Path
 ):
     db_engine = get_engine_async("config/.env")
+
+    if resolution_scope_id:
+        counts = await read_assignment_counts_for_scope(
+            assignment_scope_id=resolution_scope_id, db_engine=db_engine
+        )
+        if counts.num_open > 0 or counts.num_partial > 0:
+            raise ValueError(
+                f"Resolution scope has incomplete assignments: "
+                f"{counts.num_open} open, {counts.num_partial} partial"
+            )
 
     scope_ids = [deet_scope_id] + ([resolution_scope_id] if resolution_scope_id else [])
 
