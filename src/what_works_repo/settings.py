@@ -16,6 +16,8 @@ class NacsosSettings(BaseModel):
             " Leave empty to skip verification of positives."
         ),
     )
+    deet_user_id: str
+    deet_username: str
 
 
 class Settings(BaseSettings):
