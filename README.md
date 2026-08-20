@@ -1,3 +1,5 @@
 # what-works-repo
 
-Hello
+```
+uv run snakemake
+```

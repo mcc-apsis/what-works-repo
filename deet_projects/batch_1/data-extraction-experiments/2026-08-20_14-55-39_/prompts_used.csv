@@ -1,0 +1,2 @@
+prompt,output_data_type,attribute_id,attribute_label
+Does the text look like an academic abstract?,bool,0,incl

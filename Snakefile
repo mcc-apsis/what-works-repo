@@ -25,7 +25,7 @@ CURRENT_BATCH_DEET_ASSIGNMENT_SCOPE = CURRENT_BATCH_DIR / "deet_assignment_scope
 CURRENT_BATCH_DEET_RESOLUTION_SCOPE = CURRENT_BATCH_DIR / "deet_resolution_scope_id.txt"
 
 CURRENT_BATCH_DEET_RESOLVED_ANNOTATIONS = (
-    CURRENT_BATCH_DIR / "resolved_deet_annotations.jsonl"
+    CURRENT_BATCH_DIR / "resolved_deet_annotations.csv"
 )
 
 NEXT_BATCH_ITEMS = BATCH_DIR / f"batch_{NEXT_BATCH}" / "items.jsonl"
@@ -151,9 +151,14 @@ rule annotate_with_deet_and_assign_checks:
 rule export_batch_resolved_deet_annotations:
     """Make sure all deet predicted positives have been checked by a human, and export all annotations, preferring human decisions to deet."""
     input:
-        CURRENT_BATCH_DEET_FINALISED,
+        CURRENT_BATCH_DEET_ASSIGNMENT_SCOPE,
+        CURRENT_BATCH_DEET_RESOLUTION_SCOPE,
     output:
         CURRENT_BATCH_DEET_RESOLVED_ANNOTATIONS,
+    shell:
+        "uv run python src/what_works_repo/nacsos_rw/export_deet_annotations.py "
+        "{input} "
+        "{output} "
 
 
 rule check_stopping_criteria:
