@@ -14,7 +14,7 @@ class DeetAnnotator:
     def __init__(self, experiment: ExperimentArtefacts) -> None:
         self.config = DataExtractionConfig.from_yaml(experiment.config_snapshot)
         self.extractor = LLMDataExtractor(config=self.config)
-        self.parse_attributes(experiment.config_snapshot)
+        self.parse_attributes(experiment.prompts_snapshot)
 
     def parse_attributes(self, prompt_path: Path) -> None:
         """Parse attributes from a prompt path"""

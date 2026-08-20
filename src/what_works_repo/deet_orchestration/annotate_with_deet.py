@@ -25,7 +25,7 @@ def resolve_deet_experiment(
 ) -> ExperimentArtefacts:
     """Resolve a deet project and run id (stored in a text file) to an experiment."""
     run_id = exp_path.read_text().strip()
-    project = DeetProject.load(project_dir=deet_project_config)
+    project = DeetProject.load(project_dir=deet_project_config.parent)
     experiment = ExperimentArtefacts(base_dir=project.experiments_dir / run_id)
     if not experiment.is_complete:
         raise ValueError
@@ -86,11 +86,14 @@ async def annotate(annotator: DeetAnnotator, scope_id: str) -> None:
             )
 
 
-def main(exp_path: Path, deet_scope_file: Path, deet_project_config: Path):
+def main(
+    exp_path: Path, deet_scope_file: Path, deet_project_config: Path, output_path: Path
+):
     experiment = resolve_deet_experiment(exp_path, deet_project_config)
     annotator = DeetAnnotator(experiment=experiment)
     scope_id = deet_scope_file.read_text().strip()
     asyncio.run(annotate(annotator=annotator, scope_id=scope_id))
+    output_path.write_text("asdf")
 
 
 if __name__ == "__main__":
