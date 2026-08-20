@@ -8,6 +8,14 @@ class NacsosSettings(BaseModel):
     project_id: str
     import_id: str
     inclusion_key: str
+    comment_key: str | None = None
+    deet_check_users: list[str] = Field(
+        default_factory=list,
+        description=(
+            "User Ids of humans who check DEET predicted positives."
+            " Leave empty to skip verification of positives."
+        ),
+    )
 
 
 class Settings(BaseSettings):
