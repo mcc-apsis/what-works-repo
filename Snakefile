@@ -22,6 +22,8 @@ CURRENT_BATCH_DEET_PROJECT_CONFIG = CURRENT_BATCH_DEET_PROJECT_DIR / "project.ya
 CURRENT_BATCH_SCOPE_ID_FILE = CURRENT_BATCH_DIR / "assignment_scope_ids.json"
 CURRENT_BATCH_DEET_FINALISED = CURRENT_BATCH_DEET_PROJECT_DIR / "finalised_run.txt"
 CURRENT_BATCH_DEET_ASSIGNMENT_SCOPE = CURRENT_BATCH_DIR / "deet_assignment_scope_id.txt"
+CURRENT_BATCH_DEET_RESOLUTION_SCOPE = CURRENT_BATCH_DIR / "deet_resolution_scope_id.txt"
+
 CURRENT_BATCH_DEET_RESOLVED_ANNOTATIONS = (
     CURRENT_BATCH_DIR / "resolved_deet_annotations.jsonl"
 )
@@ -136,8 +138,14 @@ rule annotate_with_deet_and_assign_checks:
     """Use finalised deet config to annotate remaining batch documents. Assign predicted positives to human."""
     input:
         CURRENT_BATCH_DEET_FINALISED,
-    output:
         CURRENT_BATCH_DEET_ASSIGNMENT_SCOPE,
+        CURRENT_BATCH_DEET_PROJECT_CONFIG,
+    output:
+        CURRENT_BATCH_DEET_RESOLUTION_SCOPE,
+    shell:
+        "uv run python src/what_works_repo/deet_orchestration/annotate_with_deet.py "
+        "{input} "
+        "{output} "
 
 
 rule export_batch_resolved_deet_annotations:
