@@ -30,6 +30,10 @@ optional-dependencies.docs = [
 optional-dependencies.nacsos = [
   "nacsos-data[scripts,utils]",
 ]
+optional-dependencies.ml = [
+    "torch>=2.13.0",
+    "transformers>=5.15.0",
+]
 
 [dependency-groups]
 dev = [

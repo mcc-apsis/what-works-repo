@@ -20,6 +20,17 @@ class NacsosSettings(BaseModel):
     deet_username: str
 
 
+class TransformerModel(BaseModel):
+    name: str
+    label: str
+    threshold: float
+
+
+class MLSettings(BaseModel):
+    train_model: bool
+    pretrained_models: list[TransformerModel]
+
+
 class Settings(BaseSettings):
     """Settings for the what works repo."""
 
@@ -28,6 +39,7 @@ class Settings(BaseSettings):
     ts01_username: str = Field(default_factory=lambda: os.getenv("USER", ""))
 
     nacsos: NacsosSettings
+    ml: MLSettings
     sample_size: int = 20000
 
     @classmethod

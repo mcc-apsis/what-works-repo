@@ -5,7 +5,7 @@ from snakemake.exceptions import WorkflowError
 from what_works_repo.batch import Batch
 from what_works_repo.logging import logger
 from what_works_repo.settings import settings
-from what_works_repo.constants import STOPPING_CRITERIA_TRIGGERED
+from what_works_repo.constants import STOPPING_CRITERIA_TRIGGERED, RAW_DATA
 
 batch = Batch.current()
 
@@ -38,14 +38,14 @@ def require_manual_step(output_path, instruction):
 
 rule fetch_scopus_query:
     output:
-        directory("data/raw/scopus/"),
+        directory(RAW_DATA),
     shell:
         f'rsync -av --progress -e "ssh -o ProxyJump={settings.ts01_username}@ts01.pik-potsdam.de" {settings.ts01_username}@se164:/data/academic-api/data/results/4/responses/*.jsonl {output}/'
 
 
 rule prepare_sample_records:
     input:
-        "data/raw/scopus",
+        RAW_DATA,
     output:
         Batch(1).items,
     shell:
@@ -191,6 +191,8 @@ rule train_prioritisation_model:
         batch.deet_resolved_annotations,
     output:
         batch.model,
+    shell:
+        "uv run python src/what_works_repo/classify/train.py {batch.number}"
 
 
 rule predict:

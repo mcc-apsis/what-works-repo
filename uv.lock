@@ -4791,6 +4791,10 @@ dependencies = [
 docs = [
     { name = "mkdocs-material" },
 ]
+ml = [
+    { name = "torch" },
+    { name = "transformers" },
+]
 nacsos = [
     { name = "nacsos-data", extra = ["scripts", "utils"] },
 ]
@@ -4810,9 +4814,11 @@ requires-dist = [
     { name = "nacsos-data", extras = ["scripts", "utils"], marker = "extra == 'nacsos'", git = "https://gitlab.pik-potsdam.de/mcc-apsis/nacsos/nacsos-data.git?tag=v0.24.53" },
     { name = "pydantic-settings", specifier = ">=2.14.2" },
     { name = "snakemake", specifier = ">=9.24" },
+    { name = "torch", marker = "extra == 'ml'", specifier = ">=2.13.0" },
+    { name = "transformers", marker = "extra == 'ml'", specifier = ">=5.15.0" },
     { name = "typer", specifier = ">=0.27" },
 ]
-provides-extras = ["docs", "nacsos"]
+provides-extras = ["docs", "ml", "nacsos"]
 
 [package.metadata.requires-dev]
 dev = [

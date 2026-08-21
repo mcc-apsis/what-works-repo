@@ -7,3 +7,9 @@ nacsos:
     - b4c20ee5-e415-4ac8-8e9d-77770311e38c
   deet_user_id: "2a90c7dc-69a8-411d-9ed9-329768b3e386"
   deet_username: "deet.mustermann"
+ml:
+  train_model: False
+  pretrained_models:
+    - name: evidence-for-climate-solutions/climatebert-policyinstruments-relevant
+      label: relevant
+      threshold: 0.3
