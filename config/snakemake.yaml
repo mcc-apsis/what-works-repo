@@ -4,7 +4,6 @@ nacsos:
   inclusion_key: "incl"
   comment_key: "comment"
   deet_check_users: 
-    - 088011c5-546b-4c4a-b099-54ab59a7a99a
     - b4c20ee5-e415-4ac8-8e9d-77770311e38c
   deet_user_id: "2a90c7dc-69a8-411d-9ed9-329768b3e386"
   deet_username: "deet.mustermann"

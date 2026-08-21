@@ -6,5 +6,9 @@
       "source.fixAll": "explicit"
     }
   },
-  "ty.lint.enable": true
+  "ty.lint.enable": true,
+  // "files.associations": {
+  //   "Snakefile": "python",
+  //   "*.smk": "python"
+  // }
 }

@@ -9,6 +9,7 @@ from nacsos_data.db import get_engine_async
 from nacsos_data.db.crud.annotations import (
     read_annotation_scheme_for_scope,
     read_annotations_for_assignment,
+    read_assignment_scope,
     read_assignments_for_scope,
     store_assignments,
     upsert_annotations,
@@ -41,7 +42,9 @@ def resolve_deet_experiment(
     return experiment
 
 
-async def annotate(annotator: DeetAnnotator, scope_id: str) -> tuple[list[str], str]:
+async def annotate(
+    annotator: DeetAnnotator, scope_id: str
+) -> tuple[list[str], str, str]:
     """
     Annotate assignments with the DeetAnnotator.
 
@@ -51,6 +54,11 @@ async def annotate(annotator: DeetAnnotator, scope_id: str) -> tuple[list[str], 
     db_engine = get_engine_async("config/.env")
     predicted_positive_ids: list[str] = []
     async with db_engine.session() as session:
+        scope = await read_assignment_scope(
+            assignment_scope_id=scope_id, session=session
+        )
+        if not scope:
+            raise ValueError(f"Scope {scope_id} does not exist!")
         assignments = await read_assignments_for_scope(
             assignment_scope_id=scope_id, session=session
         )
@@ -122,11 +130,12 @@ async def annotate(annotator: DeetAnnotator, scope_id: str) -> tuple[list[str], 
                 db_engine=db_engine,  # engine, not session
             )
             logger.debug(upsert_res)
-    return predicted_positive_ids, str(scheme.annotation_scheme_id)
+
+        return predicted_positive_ids, str(scheme.annotation_scheme_id), scope.name
 
 
 async def assign_deet_verification_scope(
-    predicted_positive_ids: list[str], scheme_id: str
+    predicted_positive_ids: list[str], scheme_id: str, scope_name: str
 ) -> str:
     """
     Assign predicted positives to users defined in config.
@@ -145,7 +154,7 @@ async def assign_deet_verification_scope(
     scope = AssignmentScopeModel(
         assignment_scope_id=new_scope_id,
         annotation_scheme_id=scheme_id,
-        name="deet-checks",
+        name=f"{scope_name}__human_resolution",
         description="Human review of deet-predicted positives",
     )
     await upsert_assignment_scope(scope, db_engine)
@@ -169,9 +178,9 @@ async def assign_deet_verification_scope(
 
 
 async def _main(annotator: DeetAnnotator, scope_id: str, output_path: Path) -> None:
-    predicted_positive_ids, scheme_id = await annotate(annotator, scope_id)
+    predicted_positive_ids, scheme_id, scope_name = await annotate(annotator, scope_id)
     new_scope_id = await assign_deet_verification_scope(
-        predicted_positive_ids, scheme_id
+        predicted_positive_ids, scheme_id, scope_name
     )
     output_path.write_text(new_scope_id)
 
