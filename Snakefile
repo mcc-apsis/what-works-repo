@@ -1,34 +1,31 @@
 import os
 
+from snakemake.exceptions import WorkflowError
+
+from what_works_repo.batch import Batch
+from what_works_repo.logging import logger
 from what_works_repo.settings import settings
-from what_works_repo.constants import BATCH_DIR, DEET_DIR, STOPPING_CRITERIA_TRIGGERED
+from what_works_repo.constants import STOPPING_CRITERIA_TRIGGERED
+
+batch = Batch.current()
 
 
-def get_next_batch_number():
-    existing_batches = list(BATCH_DIR.glob("batch_*/items.jsonl"))
-    return len(existing_batches) + 1
+rule all:
+    input:
+        STOPPING_CRITERIA_TRIGGERED,
 
 
-NEXT_BATCH = get_next_batch_number()
-CURRENT_BATCH = NEXT_BATCH - 1
-
-CURRENT_BATCH_DIR = BATCH_DIR / f"batch_{CURRENT_BATCH}"
-CURRENT_BATCH_ITEMS = CURRENT_BATCH_DIR / "items.jsonl"
-CURRENT_BATCH_ANNOTATIONS = CURRENT_BATCH_DIR / "annotations.csv"
-CURRENT_BATCH_IMPORTED = CURRENT_BATCH_DIR / "imported.txt"
-CURRENT_BATCH_MODEL = CURRENT_BATCH_DIR / "model.txt"  # TODO define model serialisation
-CURRENT_BATCH_DEET_PROJECT_DIR = DEET_DIR / f"batch_{CURRENT_BATCH}"
-CURRENT_BATCH_DEET_PROJECT_CONFIG = CURRENT_BATCH_DEET_PROJECT_DIR / "project.yaml"
-CURRENT_BATCH_SCOPE_ID_FILE = CURRENT_BATCH_DIR / "assignment_scope_ids.json"
-CURRENT_BATCH_DEET_FINALISED = CURRENT_BATCH_DEET_PROJECT_DIR / "finalised_run.txt"
-CURRENT_BATCH_DEET_ASSIGNMENT_SCOPE = CURRENT_BATCH_DIR / "deet_assignment_scope_id.txt"
-CURRENT_BATCH_DEET_RESOLUTION_SCOPE = CURRENT_BATCH_DIR / "deet_resolution_scope_id.txt"
-
-CURRENT_BATCH_DEET_RESOLVED_ANNOTATIONS = (
-    CURRENT_BATCH_DIR / "resolved_deet_annotations.csv"
-)
-
-NEXT_BATCH_ITEMS = BATCH_DIR / f"batch_{NEXT_BATCH}" / "items.jsonl"
+def require_manual_step(output_path, instruction):
+    if os.path.exists(output_path):
+        return
+    banner = "!" * 72
+    logger.error(
+        f"\n{banner}\n  MANUAL STEP REQUIRED\n{banner}\n"
+        f"  {instruction}\n"
+        f"  Write the result to:\n    {output_path}\n"
+        f"  then re-run snakemake to continue.\n{banner}"
+    )
+    raise WorkflowError(f"Manual step required: {instruction}")
 
 
 rule fetch_scopus_query:
@@ -42,7 +39,7 @@ rule prepare_sample_records:
     input:
         "data/raw/scopus",
     output:
-        BATCH_DIR / "batch_1" / "items.jsonl",
+        Batch(1).items,
     shell:
         "uv run python src/what_works_repo/nacsos_rw/sample_scopus_records.py "
         "{input} "
@@ -66,9 +63,9 @@ rule setup_nacsos_project:
 
 rule import_scopus_to_nacsos:
     input:
-        CURRENT_BATCH_ITEMS,
+        batch.items,
     output:
-        CURRENT_BATCH_IMPORTED,
+        batch.imported,
     shell:
         # f"ssh -N -L 5433:localhost:5432 -L 19530:localhost:19530 {settings.ts01_username}@se164 -J {settings.ts01_username}@ts01 & "
         # "TUNNEL_PID=$! ; "
@@ -85,24 +82,21 @@ rule import_scopus_to_nacsos:
 rule make_assignments:
     """Manual step: Create an assignment scope in NACSOS, write ID to output file."""
     input:
-        CURRENT_BATCH_IMPORTED,
+        ancient(batch.imported),
     output:
-        CURRENT_BATCH_SCOPE_ID_FILE,
+        batch.scope_ids,
     run:
-        import os
-
-        if not os.path.exists(output[0]):
-            raise FileNotFoundError(
-                f"Create assignment scope in NACSOS, then write ID to {output[0]}"
-            )
+        require_manual_step(
+            output[0], "Create assignment scope in NACSOS, and record its ID"
+        )
 
 
 rule export_batch_annotations:
     """Check imported batch for completed annotations and write if complete, otherwise do nothing."""
     input:
-        CURRENT_BATCH_SCOPE_ID_FILE,
+        batch.scope_ids,
     output:
-        CURRENT_BATCH_ANNOTATIONS,
+        batch.annotations,
     shell:
         "uv run python src/what_works_repo/nacsos_rw/export_human_annotations.py "
         "{input} "
@@ -112,9 +106,9 @@ rule export_batch_annotations:
 rule create_deet_subproject:
     """Create a deet project that uses annotations as gold standard data"""
     input:
-        CURRENT_BATCH_ANNOTATIONS,
+        batch.annotations,
     output:
-        CURRENT_BATCH_DEET_PROJECT_CONFIG,
+        batch.deet_config,
     shell:
         "uv run python src/what_works_repo/deet_orchestration/create_deet_subproject.py "
         "{input} "
@@ -124,24 +118,36 @@ rule create_deet_subproject:
 rule finalise_deet_run:
     """Manual step: User completes DEET work, writes preferred run ID."""
     input:
-        CURRENT_BATCH_DEET_PROJECT_CONFIG,
+        ancient(batch.deet_config),
     output:
-        CURRENT_BATCH_DEET_FINALISED,
+        batch.deet_finalised,
     run:
-        if not os.path.exists(output[0]):
-            raise FileNotFoundError(
-                f"Complete DEET work and write run ID to {output[0]}"
-            )
+        require_manual_step(
+            output[0], f"Complete DEET work and write run ID to {output[0]}"
+        )
+
+
+rule assign_docs_deet:
+    """In the NACSOS UI, assign the documents you want deet to annotate to deet."""
+    input:
+        ancient(batch.deet_finalised),
+    output:
+        batch.deet_assignment_scope,
+    run:
+        require_manual_step(
+            output[0],
+            f"Assign a batch of documents to deet, and write the scope ID to {output[0]}",
+        )
 
 
 rule annotate_with_deet_and_assign_checks:
     """Use finalised deet config to annotate remaining batch documents. Assign predicted positives to human."""
     input:
-        CURRENT_BATCH_DEET_FINALISED,
-        CURRENT_BATCH_DEET_ASSIGNMENT_SCOPE,
-        CURRENT_BATCH_DEET_PROJECT_CONFIG,
+        batch.deet_finalised,
+        batch.deet_assignment_scope,
+        batch.deet_config,
     output:
-        CURRENT_BATCH_DEET_RESOLUTION_SCOPE,
+        batch.deet_resolution_scope,
     shell:
         "uv run python src/what_works_repo/deet_orchestration/annotate_with_deet.py "
         "{input} "
@@ -151,10 +157,10 @@ rule annotate_with_deet_and_assign_checks:
 rule export_batch_resolved_deet_annotations:
     """Make sure all deet predicted positives have been checked by a human, and export all annotations, preferring human decisions to deet."""
     input:
-        CURRENT_BATCH_DEET_ASSIGNMENT_SCOPE,
-        CURRENT_BATCH_DEET_RESOLUTION_SCOPE,
+        batch.deet_assignment_scope,
+        batch.deet_resolution_scope,
     output:
-        CURRENT_BATCH_DEET_RESOLVED_ANNOTATIONS,
+        batch.deet_resolved_annotations,
     shell:
         "uv run python src/what_works_repo/nacsos_rw/export_deet_annotations.py "
         "{input} "
@@ -164,28 +170,25 @@ rule export_batch_resolved_deet_annotations:
 rule check_stopping_criteria:
     """Check if stopping criteria is met."""
     input:
-        CURRENT_BATCH_DEET_RESOLVED_ANNOTATIONS,
+        batch.deet_resolved_annotations,
     output:
         STOPPING_CRITERIA_TRIGGERED,
+    shell:
+        "uv run python src/what_works_repo/classify/stopping_criteria.py"
 
 
 rule train_prioritisation_model:
     """Combine human-only, and human+deet resolutions to train a model."""
     input:
-        CURRENT_BATCH_ANNOTATIONS,
-        CURRENT_BATCH_DEET_RESOLVED_ANNOTATIONS,
+        batch.annotations,
+        batch.deet_resolved_annotations,
     output:
-        CURRENT_BATCH_MODEL,
+        batch.model,
 
 
 rule predict:
     """Use predicted model to make predictions for all remaining documents."""
     input:
-        CURRENT_BATCH_MODEL,
+        batch.model,
     output:
-        NEXT_BATCH_ITEMS,
-
-
-rule all:
-    input:
-        STOPPING_CRITERIA_TRIGGERED,
+        batch.next.items,
