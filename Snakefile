@@ -10,9 +10,17 @@ from what_works_repo.constants import STOPPING_CRITERIA_TRIGGERED
 batch = Batch.current()
 
 
+def pipeline_target(wildcards):
+    decision = checkpoints.decide_stopping.get().output[0]
+    verdict = float(open(decision).read().strip())
+    if verdict < 0.05:
+        return str(decision)
+    return str(batch.next.items)
+
+
 rule all:
     input:
-        STOPPING_CRITERIA_TRIGGERED,
+        pipeline_target,
 
 
 def require_manual_step(output_path, instruction):
@@ -167,14 +175,13 @@ rule export_batch_resolved_deet_annotations:
         "{output} "
 
 
-rule check_stopping_criteria:
-    """Check if stopping criteria is met."""
+checkpoint decide_stopping:
     input:
         batch.deet_resolved_annotations,
     output:
-        STOPPING_CRITERIA_TRIGGERED,
+        batch.stopping_decision,
     shell:
-        "uv run python src/what_works_repo/classify/stopping_criteria.py"
+        "uv run python src/what_works_repo/classify/stopping_criteria.py {batch.number} "
 
 
 rule train_prioritisation_model:

@@ -46,7 +46,6 @@ class Batch:
     def model(self) -> Path:
         return self.dir / "model.txt"
 
-    # --- deet -------------------------------------------------------------
     @property
     def deet_config(self) -> Path:
         return self.deet_dir / "project.yaml"
@@ -66,6 +65,10 @@ class Batch:
     @property
     def deet_resolved_annotations(self) -> Path:
         return self.dir / "resolved_deet_annotations.csv"
+
+    @property
+    def stopping_decision(self) -> Path:
+        return self.dir / "stopping_decision.txt"
 
     # --- navigation -------------------------------------------------------
     @classmethod
