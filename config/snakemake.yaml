@@ -13,3 +13,9 @@ ml:
     - name: evidence-for-climate-solutions/climatebert-policyinstruments-relevant
       label: relevant
       threshold: 0.3
+    - name: evidence-for-climate-solutions/climatebert-policyinstruments-evidencetype
+      label: 10 - 3. Quantitative
+      threshold: 0.3
+    - name: evidence-for-climate-solutions/climatebert-policyinstruments-expost_exante
+      label: 19 - 0. Ex-post
+      threshold: 0.3

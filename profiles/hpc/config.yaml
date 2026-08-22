@@ -1,0 +1,7 @@
+executor: slurm
+default-resources:
+  slurm_partition: gpu
+  slurm_qos: gpumedium
+  slurm_extra: "--gres=gpu:1"
+  mem_mb: 16000
+  runtime: 240

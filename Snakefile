@@ -201,3 +201,5 @@ rule predict:
         batch.model,
     output:
         batch.next.items,
+    shell:
+        "uv run python src/what_works_repo/classify/predict.py {batch.number}"
