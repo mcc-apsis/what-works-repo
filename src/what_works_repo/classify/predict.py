@@ -36,7 +36,7 @@ class TextPredictor:
         self, df: pd.DataFrame, prediction_cols: list[str]
     ) -> None:
         for col in prediction_cols:
-            df[col] = (df[col] * settings.ml.pred_multiplier).astype(
+            df[col] = (df[col].fillna(0) * settings.ml.pred_multiplier).astype(
                 settings.ml.pred_dtype
             )
         pq.write_to_dataset(
