@@ -4,6 +4,8 @@ from typing import cast
 
 import pandas as pd
 import pyarrow as pa
+import pyarrow.compute as pc
+import pyarrow.dataset as ds
 import pyarrow.parquet as pq
 import typer
 from nacsos_data.util.academic.apis.scopus import ScopusAPI
@@ -100,10 +102,16 @@ class TextPredictor:
         return pred_df
 
     def process_batches(
-        self, skip_ids: list[str], batch_dir: Path = Path(RAW_DATA)
+        self,
+        skip_ids: list[str],
+        batch_dir: Path = Path(RAW_DATA),
+        job_id: int = 0,
+        num_jobs: int = 1,
     ) -> None:
         logger.info("Processing batches")
-        for jsonl_file in sorted(batch_dir.glob("*.jsonl")):
+        for i, jsonl_file in enumerate(sorted(batch_dir.glob("*.jsonl"))):
+            if i % num_jobs != job_id:
+                continue
             records = []
             with jsonl_file.open() as f:
                 partition_dir = self.prediction_dir / f"batch_file={jsonl_file.name}"
@@ -112,7 +120,7 @@ class TextPredictor:
                     logger.info(
                         f"Skipping {jsonl_file.name}, predictions already exist"
                     )
-                    continue
+                    # continue
                 records = [
                     data
                     for line in f
@@ -123,18 +131,56 @@ class TextPredictor:
                 logger.info(f"Predicting {len(records)} records from {jsonl_file}")
                 pred_df = self.predict(texts)
                 pred_df["batch_file"] = jsonl_file.name
+                logger.debug(
+                    pred_df[
+                        ["relevant", "10 - 3. Quantitative", "19 - 0. Ex-post"]
+                    ].describe(percentiles=[0.25, 0.5, 0.75, 0.9, 0.95])
+                )
+
                 self.save_predictions_file(
                     pred_df, [model.label for model in settings.ml.pretrained_models]
                 )
                 sentinel.touch()
 
+    def filter(self) -> None:
 
-def main(batch_number: int):
+        dataset = ds.dataset(self.prediction_dir, format="parquet", partitioning="hive")
+
+        dataset = ds.dataset(self.prediction_dir, format="parquet", partitioning="hive")
+        print("Schema:")
+        print(dataset.schema)
+        print("\nSample (first 1 rows):")
+        table = dataset.to_table()
+        df = table.to_pandas()  # .head(100000)
+        print(
+            df[["relevant", "10 - 3. Quantitative", "19 - 0. Ex-post"]].describe(
+                percentiles=[0.25, 0.5, 0.75, 0.9, 0.95]
+            )
+        )
+
+        mult = settings.ml.pred_multiplier
+        filt = None
+        for model in settings.ml.pretrained_models:
+            cond = pc.field(model.label) >= int(model.threshold * mult)
+            filt = cond if filt is None else (filt & cond)
+
+        # table = dataset.to_table()  # filter=filt)
+        # df = table.to_pandas()
+        # print(df.shape)
+        # print(df.head())
+
+
+def main(
+    batch_number: int,
+    job_id: int = typer.Option(0, help="Job ID for distributed processing"),
+    num_jobs: int = typer.Option(1, help="Total number of jobs"),
+):
     """Train a model for a batch"""
     batch = Batch(batch_number)
     logger.info(f"Running prediction for batch {batch.number}")
     predictor = TextPredictor()
     predictor.process_batches(skip_ids=[])
+    # predictor.filter()
 
 
 if __name__ == "__main__":
