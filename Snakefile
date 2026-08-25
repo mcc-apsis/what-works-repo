@@ -75,6 +75,7 @@ rule import_scopus_to_nacsos:
     output:
         batch.imported,
     shell:
+        # TODO: Should this be a new import each time?
         # f"ssh -N -L 5433:localhost:5432 -L 19530:localhost:19530 {settings.ts01_username}@se164 -J {settings.ts01_username}@ts01 & "
         # "TUNNEL_PID=$! ; "
         # "trap 'kill $TUNNEL_PID' EXIT ; "
@@ -94,6 +95,7 @@ rule make_assignments:
     output:
         batch.scope_ids,
     run:
+        # TODO: Should this come from next batch configuration?
         require_manual_step(
             output[0], "Create assignment scope in NACSOS, and record its ID"
         )

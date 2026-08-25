@@ -189,6 +189,10 @@ def main(
 
     Create a new scope with assignments to human users,
         as specified in annotation config.
+
+    TODO: Should this come from items instead? In this way we can preserve the order.
+    Actually, order in NACSOS doesn't matter, we can reconstruct the order
+    on stopping criteria calculation.
     """
     batch = Batch(batch_number)
     annotation_config = DeetAnnotationConfig.model_validate_json(
