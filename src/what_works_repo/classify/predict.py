@@ -12,14 +12,16 @@ from nacsos_data.util.academic.apis.scopus import ScopusAPI
 from transformers import pipeline
 
 from what_works_repo.batch import Batch
-from what_works_repo.constants import PREDICTION_DIR, RAW_DATA
+from what_works_repo.constants import BATCH_DIR, PREDICTION_DIR, RAW_DATA
 from what_works_repo.logging import logger
 from what_works_repo.settings import settings
 
 
 class TextPredictor:
-    def __init__(self):
+    def __init__(self, batch: Batch):
         self.included_ids = []
+        self.batch = batch
+        self.next_batch_config = batch.next_batch_config
         return
 
     @property
@@ -143,32 +145,71 @@ class TextPredictor:
                 )
                 sentinel.touch()
 
-    def filter(self) -> None:
+    def filter(self, skip_ids: list[str]) -> pd.DataFrame:
+        """Filter predictions, returning a dataframe of records for the next batch."""
+        if self.next_batch_config.use_pretrained_models:
+            return self._filter_pretrained(skip_ids)
+        else:
+            return self._filter_prioritised(skip_ids)
 
+    def _filter_prioritised(self, skip_ids: list[str]) -> pd.DataFrame:
         dataset = ds.dataset(self.prediction_dir, format="parquet", partitioning="hive")
+        filt = ~pc.field("scopus_id").isin(skip_ids)
 
+        table = dataset.to_table(filter=filt)
+        sorted_table = table.sort_by([(settings.nacsos.inclusion_key, "descending")])
+        sample_size = min(len(sorted_table), self.next_batch_config.n_items)
+        top_table = sorted_table.slice(0, sample_size)
+        df = cast(pd.DataFrame, top_table.to_pandas())
+        return df
+
+    def _filter_pretrained(self, skip_ids: list[str]) -> pd.DataFrame:
         dataset = ds.dataset(self.prediction_dir, format="parquet", partitioning="hive")
-        print("Schema:")
-        print(dataset.schema)
-        print("\nSample (first 1 rows):")
-        table = dataset.to_table()
-        df = table.to_pandas()  # .head(100000)
-        print(
-            df[["relevant", "10 - 3. Quantitative", "19 - 0. Ex-post"]].describe(
-                percentiles=[0.25, 0.5, 0.75, 0.9, 0.95, 0.99]
-            )
-        )
 
         mult = settings.ml.pred_multiplier
-        filt = None
+        filt = ~pc.field("scopus_id").isin(skip_ids)
+
         for model in settings.ml.pretrained_models:
             cond = pc.field(model.label) >= int(model.threshold * mult)
             filt = cond if filt is None else (filt & cond)
 
-        # table = dataset.to_table()  # filter=filt)
-        # df = table.to_pandas()
-        # print(df.shape)
-        # print(df.head())
+        table = dataset.to_table(filter=filt)
+        df = cast(pd.DataFrame, table.to_pandas())
+        sample_size = min(df.shape[0], self.next_batch_config.n_items)
+        return df.sample(sample_size)
+
+
+def get_scopus_ids_for_batch(batch: Batch) -> set[str]:
+    """Extract scopus_ids from a batch's items.jsonl."""
+    scopus_ids = set()
+    if not batch.items.exists():
+        return scopus_ids
+    with batch.items.open() as f:
+        for line in f:
+            if line.strip():
+                data = json.loads(line)
+                if scopus_id := data.get("scopus_id"):
+                    scopus_ids.add(scopus_id)
+    return scopus_ids
+
+
+def iterate_batches():
+    batch_dirs = sorted(BATCH_DIR.glob("batch_*"))
+    for batch_dir in batch_dirs:
+        batch_num = int(batch_dir.name.split("_")[1])
+        yield Batch(batch_num)
+
+
+def write_next_items(batch: Batch, df: pd.DataFrame):
+    """Write the next batch of items"""
+    with batch.items.open("w") as out:
+        for name, group in df.groupby("batch_file"):
+            filter_ids = set(group["scopus_id"])
+            with open(Path(RAW_DATA) / str(name)) as f:
+                for line in f:
+                    if data := ScopusAPI.translate_record(json.loads(line)):
+                        if data.scopus_id in filter_ids:
+                            out.write(data.model_dump_json() + "\n")
 
 
 def main(
@@ -179,9 +220,13 @@ def main(
     """Train a model for a batch"""
     batch = Batch(batch_number)
     logger.info(f"Running prediction for batch {batch.number}")
-    predictor = TextPredictor()
-    predictor.process_batches(skip_ids=[])
-    # predictor.filter()
+    all_scopus_ids = {
+        sid for batch in iterate_batches() for sid in get_scopus_ids_for_batch(batch)
+    }
+    predictor = TextPredictor(batch=batch)
+    # predictor.process_batches(skip_ids=all_scopus_ids)
+    df = predictor.filter(skip_ids=list(all_scopus_ids))
+    write_next_items(Batch(batch_number + 1), df)
 
 
 if __name__ == "__main__":

@@ -168,11 +168,21 @@ checkpoint decide_stopping:
         "uv run python src/what_works_repo/classify/stopping_criteria.py {batch.number} "
 
 
+rule configure_next_batch:
+    """Generate a config for the next batch."""
+    input:
+        batch.deet_annotations,
+        batch.deet_resolved_annotations,
+    output:
+        batch.next_batch_config_path,
+    shell:
+        "uv run python src/what_works_repo/classify/configure_next_batch.py {batch.number}"
+
+
 rule train_prioritisation_model:
     """Combine human-only, and human+deet resolutions to train a model."""
     input:
-        batch.annotations,
-        batch.deet_resolved_annotations,
+        batch.next_batch_config_path,
     output:
         batch.model,
     shell:

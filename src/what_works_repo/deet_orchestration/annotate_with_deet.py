@@ -18,10 +18,10 @@ from nacsos_data.models.annotations import (
 )
 
 from what_works_repo.batch import Batch
-from what_works_repo.constants import DEET_RUN_SKIP, DEET_SCOPE_SENTINEL
-from what_works_repo.deet_orchestration.deet_annotation_configuration import (
+from what_works_repo.configurations import (
     DeetAnnotationConfig,
 )
+from what_works_repo.constants import DEET_RUN_SKIP, DEET_SCOPE_SENTINEL
 from what_works_repo.deet_orchestration.deet_annotator import DeetAnnotator
 from what_works_repo.logging import logger
 from what_works_repo.settings import settings

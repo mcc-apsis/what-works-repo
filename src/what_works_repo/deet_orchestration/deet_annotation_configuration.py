@@ -4,30 +4,11 @@ from typing import Annotated
 
 import typer
 from deet.ui.terminal.wizards import UI, run_model_wizard
-from pydantic import BaseModel, Field, create_model
+from pydantic import Field, create_model
 
 from what_works_repo.batch import Batch
+from what_works_repo.configurations import DeetAnnotationConfig
 from what_works_repo.constants import DEET_RUN_SKIP
-
-
-class DeetAnnotationConfig(BaseModel):
-    deet_run: str = Field(...)
-    check_positives: Annotated[
-        bool,
-        UI(
-            help="Assign predicted [bold]includes[/bold] for human checking?",
-            label="Check positives?",
-        ),
-    ] = Field(default=True, description="Check positives?")
-    check_negatives: Annotated[
-        bool,
-        UI(
-            help="Assign predicted [bold]excludes[/bold] for human checking",
-        ),
-    ] = Field(default=False, description="Check negatives")
-    n_annotations: Annotated[
-        int, UI(help="How many documents to assign to deet", placeholder="0")
-    ] = Field(default=0, description="n deet annotations")
 
 
 def get_available_deet_runs(deet_dir: Path) -> type:
