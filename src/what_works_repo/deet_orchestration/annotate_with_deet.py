@@ -24,7 +24,10 @@ from nacsos_data.models.annotations import (
 )
 from nacsos_data.models.items import AcademicItemModel
 
-from what_works_repo.constants import DEET_SCOPE_SENTINEL
+from what_works_repo.constants import DEET_RUN_SKIP, DEET_SCOPE_SENTINEL
+from what_works_repo.deet_orchestration.deet_annotation_configuration import (
+    DeetAnnotationConfig,
+)
 from what_works_repo.deet_orchestration.deet_annotator import DeetAnnotator
 from what_works_repo.logging import logger
 from what_works_repo.settings import settings
@@ -177,30 +180,46 @@ async def assign_deet_verification_scope(
     return str(new_scope_id)
 
 
-async def _main(annotator: DeetAnnotator, scope_id: str, output_path: Path) -> None:
-    predicted_positive_ids, scheme_id, scope_name = await annotate(annotator, scope_id)
-    new_scope_id = await assign_deet_verification_scope(
-        predicted_positive_ids, scheme_id, scope_name
-    )
-    output_path.write_text(new_scope_id)
+async def _main(annotator: DeetAnnotator, output_path: Path) -> None:
+    raise NotImplementedError
+    # new_scope_id = await assign_deet_verification_scope(
+    #     predicted_positive_ids, scheme_id, scope_name
+    # )
+    # output_path.write_text(new_scope_id)
 
 
 def main(
-    exp_path: Path, deet_scope_file: Path, deet_project_config: Path, output_path: Path
+    deet_project_config_path: Path,
+    deet_annotation_config_path: Path,
+    items_path: Path,
+    resolution_scope_path: Path,
+    output_path: Path,
 ):
     """
     Annotate documents with deet.
 
-    Take documents assigned to deet in the scope specified in the scope file,
-    and annotate them using deet, creating annotations in NACSOS.
+    Take documents from items. Annotate with deet, using the configuration
+    read from the overall deet project config, and the annotation config.
 
-    Create a new scope with assignments to human users if specified,
-    with all predicted positives.
+    Create a new scope with assignments to human users,
+        as specified in annotation config.
     """
-    experiment = resolve_deet_experiment(exp_path, deet_project_config)
+    annotation_config = DeetAnnotationConfig.model_validate_json(
+        deet_annotation_config_path.read_text()
+    )
+    if annotation_config.deet_run == DEET_RUN_SKIP:
+        output_path.write_text("document_id,name,abstract,incl\n")
+        resolution_scope_path.write_text(DEET_SCOPE_SENTINEL)
+        return
+
+    raise NotImplementedError("Not implemented yet")
+
+    experiment = resolve_deet_experiment(
+        Path(annotation_config.deet_run), deet_project_config_path
+    )
     annotator = DeetAnnotator(experiment=experiment)
-    scope_id = deet_scope_file.read_text().strip()
-    asyncio.run(_main(annotator=annotator, scope_id=scope_id, output_path=output_path))
+    annotate()
+    asyncio.run(_main(annotator=annotator, output_path=output_path))
 
 
 if __name__ == "__main__":

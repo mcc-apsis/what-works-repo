@@ -51,12 +51,12 @@ class Batch:
         return self.deet_dir / "project.yaml"
 
     @property
-    def deet_finalised(self) -> Path:
-        return self.deet_dir / "finalised_run.txt"
+    def deet_annotation_config(self) -> Path:
+        return self.dir / "deet_annotation_config.json"
 
     @property
-    def deet_assignment_scope(self) -> Path:
-        return self.dir / "deet_assignment_scope_id.txt"
+    def deet_annotations(self) -> Path:
+        return self.dir / "deet_annotations.csv"
 
     @property
     def deet_resolution_scope(self) -> Path:
