@@ -1,6 +1,7 @@
 nacsos:
   project_id: "767c2c75-7168-407c-834e-b91e2af2af1b"
   import_id: "b13e1067-c92a-45cd-b140-7bc1d21a8bce"
+  scheme_id: "81f7d9d5-1f78-4039-80da-6fd2d3a46733"
   inclusion_key: "incl"
   comment_key: "comment"
   deet_check_users: 

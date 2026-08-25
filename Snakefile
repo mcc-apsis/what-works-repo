@@ -144,8 +144,7 @@ rule annotate_with_deet_and_assign_checks:
         batch.deet_annotations,
     shell:
         "uv run python src/what_works_repo/deet_orchestration/annotate_with_deet.py "
-        "{input} "
-        "{output} "
+        "{batch.number} "
 
 
 rule export_batch_resolved_deet_annotations:
