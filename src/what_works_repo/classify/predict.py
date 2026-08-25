@@ -45,6 +45,7 @@ class TextPredictor:
             pa.Table.from_pandas(df),
             root_path=self.prediction_dir,
             partition_cols=["batch_file"],
+            existing_data_behavior="delete_matching",
         )
 
     def predict_pretrained_model(

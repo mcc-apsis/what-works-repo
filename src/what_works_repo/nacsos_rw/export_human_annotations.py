@@ -73,7 +73,7 @@ async def export_assignments(assignment_scope_id: str) -> list[dict]:
                 raise ValueError("Item not found")
             annotations_to_export.append(
                 {
-                    "document_id": str(item.item_id),
+                    "document_id": str(item.scopus_id),
                     "name": item.title,
                     "abstract": item.text,
                     settings.nacsos.inclusion_key: resolved_anno.value_int,
