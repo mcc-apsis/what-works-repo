@@ -104,9 +104,9 @@ class TextPredictor:
     def process_batches(
         self,
         skip_ids: list[str],
+        job_id: int,
+        num_jobs: int,
         batch_dir: Path = Path(RAW_DATA),
-        job_id: int = 0,
-        num_jobs: int = 1,
     ) -> None:
         logger.info("Processing batches")
         for i, jsonl_file in enumerate(sorted(batch_dir.glob("*.jsonl"))):
@@ -120,6 +120,7 @@ class TextPredictor:
                     logger.info(
                         f"Skipping {jsonl_file.name}, predictions already exist"
                     )
+                    continue
                 records = [
                     data
                     for line in f
@@ -180,7 +181,7 @@ def main(
     batch = Batch(batch_number)
     logger.info(f"Running prediction for batch {batch.number}")
     predictor = TextPredictor()
-    predictor.process_batches(skip_ids=[])
+    predictor.process_batches(skip_ids=[], job_id=job_id, num_jobs=num_jobs)
     # predictor.filter()
 
 
