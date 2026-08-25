@@ -134,7 +134,7 @@ class TextPredictor:
                 logger.debug(
                     pred_df[
                         ["relevant", "10 - 3. Quantitative", "19 - 0. Ex-post"]
-                    ].describe(percentiles=[0.25, 0.5, 0.75, 0.9, 0.95])
+                    ].describe(percentiles=[0.25, 0.5, 0.75, 0.9, 0.95, 0.99])
                 )
 
                 self.save_predictions_file(
@@ -154,7 +154,7 @@ class TextPredictor:
         df = table.to_pandas()  # .head(100000)
         print(
             df[["relevant", "10 - 3. Quantitative", "19 - 0. Ex-post"]].describe(
-                percentiles=[0.25, 0.5, 0.75, 0.9, 0.95]
+                percentiles=[0.25, 0.5, 0.75, 0.9, 0.95, 0.99]
             )
         )
 

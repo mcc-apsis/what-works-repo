@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH --time=04:00:00
+#SBATCH --time=06:00:00
 #SBATCH --nodes=1
 #SBATCH --mem=16G
 #SBATCH --mail-user="maxca"
@@ -12,7 +12,7 @@
 #SBATCH --qos=gpumedium
 #SBATCH --cpus-per-task=5
 #SBATCH --mail-type=END,FAIL
-#SBATCH --array=0-3
+#SBATCH --array=0-5
 
 set -e
 set -o xtrace
@@ -29,6 +29,6 @@ export HF_HOME=/data/rd5/ecs/huggingface-cache
 export UV_PROJECT_ENVIRONMENT=/home/maxca/software/WWCS/what-works-repo/.venv
 
 JOB_ID=$SLURM_ARRAY_TASK_ID
-NUM_JOBS=4
+NUM_JOBS=6
 
 .venv/bin/python src/what_works_repo/classify/predict.py 1 --job-id=$JOB_ID --num-jobs=$NUM_JOBS
