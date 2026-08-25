@@ -11,6 +11,7 @@ description = ""
 requires-python = ">=3.13"
 classifiers = [
   "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: 3.14",
 ]
 dynamic = [
@@ -33,6 +34,7 @@ optional-dependencies.nacsos = [
 
 [dependency-groups]
 dev = [
+  "ruff>=0.16.4",
   "snakefmt>=2.0.3",
   "what-works-repo",
 ]
