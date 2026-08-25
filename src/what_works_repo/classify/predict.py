@@ -120,16 +120,17 @@ class TextPredictor:
                     logger.info(
                         f"Skipping {jsonl_file.name}, predictions already exist"
                     )
-                    # continue
                 records = [
                     data
                     for line in f
                     if (data := ScopusAPI.translate_record(json.loads(line)))
                     and data.scopus_id not in skip_ids
                 ]
+                scopus_ids = [row.scopus_id for row in records]
                 texts = [(row.title or "") + " " + (row.text or "") for row in records]
                 logger.info(f"Predicting {len(records)} records from {jsonl_file}")
                 pred_df = self.predict(texts)
+                pred_df["scopus_ids"] = scopus_ids
                 pred_df["batch_file"] = jsonl_file.name
                 logger.debug(
                     pred_df[
