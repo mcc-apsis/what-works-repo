@@ -8,3 +8,4 @@ RAW_DATA = "data/raw/scopus/"
 DEET_SCOPE_SENTINEL = "NONE"
 
 PREDICTION_DIR = Path("data/predictions/")
+DEET_RUN_SKIP = "Skip deet annotation for this batch"

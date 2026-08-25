@@ -123,39 +123,25 @@ rule create_deet_subproject:
         "{output} "
 
 
-rule finalise_deet_run:
+rule configure_deet_annotation:
     """Manual step: User completes DEET work, writes preferred run ID."""
     input:
         ancient(batch.deet_config),
     output:
-        batch.deet_finalised,
-    run:
-        require_manual_step(
-            output[0], f"Complete DEET work and write run ID to {output[0]}"
-        )
-
-
-rule assign_docs_deet:
-    """In the NACSOS UI, assign the documents you want deet to annotate to deet."""
-    input:
-        ancient(batch.deet_finalised),
-    output:
-        batch.deet_assignment_scope,
-    run:
-        require_manual_step(
-            output[0],
-            f"Assign a batch of documents to deet, and write the scope ID to {output[0]}",
-        )
+        batch.deet_annotation_config,
+    shell:
+        "uv run src/what_works_repo/deet_orchestration/deet_annotation_configuration.py {batch.number}"
 
 
 rule annotate_with_deet_and_assign_checks:
     """Use finalised deet config to annotate remaining batch documents. Assign predicted positives to human."""
     input:
-        batch.deet_finalised,
-        batch.deet_assignment_scope,
         batch.deet_config,
+        batch.deet_annotation_config,
+        batch.items,
     output:
         batch.deet_resolution_scope,
+        batch.deet_annotations,
     shell:
         "uv run python src/what_works_repo/deet_orchestration/annotate_with_deet.py "
         "{input} "
@@ -165,12 +151,11 @@ rule annotate_with_deet_and_assign_checks:
 rule export_batch_resolved_deet_annotations:
     """Make sure all deet predicted positives have been checked by a human, and export all annotations, preferring human decisions to deet."""
     input:
-        batch.deet_assignment_scope,
         batch.deet_resolution_scope,
     output:
         batch.deet_resolved_annotations,
     shell:
-        "uv run python src/what_works_repo/nacsos_rw/export_deet_annotations.py "
+        "uv run python src/what_works_repo/nacsos_rw/export_deet_annotation_resolutions.py "
         "{input} "
         "{output} "
 
