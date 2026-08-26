@@ -75,6 +75,7 @@ rule import_scopus_to_nacsos:
     output:
         batch.imported,
     shell:
+        # TODO: Should this be a new import each time?
         # f"ssh -N -L 5433:localhost:5432 -L 19530:localhost:19530 {settings.ts01_username}@se164 -J {settings.ts01_username}@ts01 & "
         # "TUNNEL_PID=$! ; "
         # "trap 'kill $TUNNEL_PID' EXIT ; "
@@ -94,6 +95,7 @@ rule make_assignments:
     output:
         batch.scope_ids,
     run:
+        # TODO: Should this come from next batch configuration?
         require_manual_step(
             output[0], "Create assignment scope in NACSOS, and record its ID"
         )
@@ -144,8 +146,7 @@ rule annotate_with_deet_and_assign_checks:
         batch.deet_annotations,
     shell:
         "uv run python src/what_works_repo/deet_orchestration/annotate_with_deet.py "
-        "{input} "
-        "{output} "
+        "{batch.number} "
 
 
 rule export_batch_resolved_deet_annotations:
@@ -169,11 +170,21 @@ checkpoint decide_stopping:
         "uv run python src/what_works_repo/classify/stopping_criteria.py {batch.number} "
 
 
+rule configure_next_batch:
+    """Generate a config for the next batch."""
+    input:
+        batch.deet_annotations,
+        batch.deet_resolved_annotations,
+    output:
+        batch.next_batch_config_path,
+    shell:
+        "uv run python src/what_works_repo/classify/configure_next_batch.py {batch.number}"
+
+
 rule train_prioritisation_model:
     """Combine human-only, and human+deet resolutions to train a model."""
     input:
-        batch.annotations,
-        batch.deet_resolved_annotations,
+        batch.next_batch_config_path,
     output:
         batch.model,
     shell:

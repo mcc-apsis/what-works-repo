@@ -7,6 +7,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict, YamlConfigSettin
 
 class NacsosSettings(BaseModel):
     project_id: str
+    scheme_id: str
     import_id: str
     inclusion_key: str
     comment_key: str | None = None
