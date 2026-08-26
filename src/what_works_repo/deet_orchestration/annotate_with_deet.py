@@ -202,7 +202,7 @@ def main(
         annotation_config.deet_run == DEET_RUN_SKIP
         or annotation_config.n_annotations < 1
     ):
-        batch.deet_annotation_config.write_text("document_id,name,abstract,incl\n")
+        batch.deet_annotations.write_text("document_id,name,abstract,incl\n")
         batch.deet_resolution_scope.write_text(DEET_SCOPE_SENTINEL)
         return
 
