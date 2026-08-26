@@ -1,11 +1,13 @@
 import os
 
+import numpy as np
 from pydantic import BaseModel, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict, YamlConfigSettingsSource
 
 
 class NacsosSettings(BaseModel):
     project_id: str
+    scheme_id: str
     import_id: str
     inclusion_key: str
     comment_key: str | None = None
@@ -20,6 +22,39 @@ class NacsosSettings(BaseModel):
     deet_username: str
 
 
+class TransformerModel(BaseModel):
+    name: str
+    label: str
+    threshold: float
+
+
+class MLSettings(BaseModel):
+    train_model: bool
+    pretrained_models: list[TransformerModel]
+    triage_predictions: bool = False
+    prediction_precision: int = 4
+
+    def _prediction_storage(self) -> tuple[int, np.dtype]:
+        """
+        Return a multiplier and data type given the number of decimal places required.
+        """
+        multiplier = 10**self.prediction_precision
+        if multiplier <= 255:
+            return multiplier, np.dtype("uint8")
+        elif multiplier <= 65535:
+            return multiplier, np.dtype("uint16")
+        else:
+            return 1, np.dtype("float32")
+
+    @property
+    def pred_multiplier(self) -> int:
+        return self._prediction_storage()[0]
+
+    @property
+    def pred_dtype(self) -> np.dtype:
+        return self._prediction_storage()[1]
+
+
 class Settings(BaseSettings):
     """Settings for the what works repo."""
 
@@ -28,6 +63,7 @@ class Settings(BaseSettings):
     ts01_username: str = Field(default_factory=lambda: os.getenv("USER", ""))
 
     nacsos: NacsosSettings
+    ml: MLSettings
     sample_size: int = 20000
 
     @classmethod

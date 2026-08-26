@@ -1,0 +1,9 @@
+executor: slurm
+rerun-triggers: params
+default-resources:
+  slurm_partition: gpu
+  slurm_qos: gpumedium
+  slurm_account: ecs
+  gres: "gpu:1"
+  mem_mb: 16000
+  runtime: 240

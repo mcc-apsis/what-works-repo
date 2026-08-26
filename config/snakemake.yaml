@@ -1,9 +1,22 @@
 nacsos:
   project_id: "767c2c75-7168-407c-834e-b91e2af2af1b"
   import_id: "b13e1067-c92a-45cd-b140-7bc1d21a8bce"
+  scheme_id: "81f7d9d5-1f78-4039-80da-6fd2d3a46733"
   inclusion_key: "incl"
   comment_key: "comment"
   deet_check_users: 
     - b4c20ee5-e415-4ac8-8e9d-77770311e38c
   deet_user_id: "2a90c7dc-69a8-411d-9ed9-329768b3e386"
   deet_username: "deet.mustermann"
+ml:
+  train_model: False
+  pretrained_models:
+    - name: evidence-for-climate-solutions/climatebert-policyinstruments-relevant
+      label: relevant
+      threshold: 0.3
+    - name: evidence-for-climate-solutions/climatebert-policyinstruments-evidencetype
+      label: 10 - 3. Quantitative
+      threshold: 0.3
+    - name: evidence-for-climate-solutions/climatebert-policyinstruments-expost_exante
+      label: 19 - 0. Ex-post
+      threshold: 0.3

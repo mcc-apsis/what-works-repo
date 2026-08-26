@@ -6,9 +6,10 @@ import typer
 from nacsos_data.db import get_engine_async
 from nacsos_data.db.crud.annotations import read_assignment_counts_for_scope
 from nacsos_data.models.nql import AssignmentFilter
-from nacsos_data.util.annotations.export import prepare_export_table
+from nacsos_data.util.annotations.export import get_project_labels, prepare_export_table
 
 from what_works_repo.constants import DEET_SCOPE_SENTINEL
+from what_works_repo.logging import logger
 from what_works_repo.settings import settings
 
 
@@ -24,6 +25,13 @@ async def export(resolution_scope_id: str, output_path: Path):
             f"{counts.num_open} open, {counts.num_partial} partial"
         )
 
+    labels = await get_project_labels(
+        project_id=settings.nacsos.project_id, db_engine=db_engine
+    )
+
+    # TODO: Deal with resolutions if desired.
+    # This just assumes single annotators are source of truth
+
     async with db_engine.session() as session:
         rows = await prepare_export_table(
             session=session,
@@ -32,17 +40,18 @@ async def export(resolution_scope_id: str, output_path: Path):
             assignment_scope_ids=[resolution_scope_id],
             user_ids=None,
             project_id=settings.nacsos.project_id,
-            # labels=list(labels_dict.values()),
+            labels=list(labels.values()),
             ignore_hierarchy=True,
             ignore_repeat=True,
         )
         df = pd.DataFrame(rows)
 
-    df[["item_id", "title", "text", "incl"]].rename(
+    df[["item_id", "title", "text", f"{settings.nacsos.inclusion_key}|1"]].rename(
         columns={
             "item_id": "document_id",
             "title": "name",
             "text": "abstract",
+            "{settings.nacsos.inclusion_key}|1": "incl",
         }
     ).to_csv(output_path, index=False)
 
@@ -55,8 +64,11 @@ def main(deet_resolutions_scope: Path, output_path: Path):
     """
     resolution_scope_id = deet_resolutions_scope.read_text().strip()
     if resolution_scope_id == DEET_SCOPE_SENTINEL:
+        logger.info("No documents to resolve")
         output_path.write_text("document_id,name,abstract,incl\n")
         return
+
+    logger.info("Exporting human resolutions of deet annotations.")
 
     asyncio.run(
         export(

@@ -3,6 +3,7 @@
 from dataclasses import dataclass
 from pathlib import Path
 
+from what_works_repo.configurations import NextBatchConfig
 from what_works_repo.constants import BATCH_DIR, DEET_DIR
 
 
@@ -69,6 +70,16 @@ class Batch:
     @property
     def stopping_decision(self) -> Path:
         return self.dir / "stopping_decision.txt"
+
+    @property
+    def next_batch_config_path(self) -> Path:
+        return self.dir / "next_batch_config.json"
+
+    @property
+    def next_batch_config(self) -> NextBatchConfig:
+        return NextBatchConfig.model_validate_json(
+            self.next_batch_config_path.read_text()
+        )
 
     # --- navigation -------------------------------------------------------
     @classmethod
