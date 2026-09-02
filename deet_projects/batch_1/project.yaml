@@ -1,0 +1,7 @@
+project:
+  created_at: '2026-08-26T12:41:20.339483Z'
+  evaluation_strategy: dev_val_test
+  gold_standard_data_format: generic_csv
+  gold_standard_data_path: ../../data/processed/batches/batch_1/annotations.csv
+  name: asdf
+  pdf_dir: null
