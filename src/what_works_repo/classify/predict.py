@@ -32,9 +32,9 @@ class TextPredictor:
             return PREDICTION_DIR / "prioritisation"
         else:
             model_names = [
-                model.name.replace("/", "-") for model in settings.ml.pretrained_models
+                model.name.split("-")[-1] for model in settings.ml.pretrained_models
             ]
-            return PREDICTION_DIR / "_".join(model_names)
+            return PREDICTION_DIR / "__".join(model_names)
 
     def save_predictions_file(
         self, df: pd.DataFrame, prediction_cols: list[str]
@@ -156,7 +156,7 @@ class TextPredictor:
 
     def _filter_prioritised(self, skip_ids: list[str]) -> pd.DataFrame:
         dataset = ds.dataset(self.prediction_dir, format="parquet", partitioning="hive")
-        filt = ~pc.field("scopus_id").isin(skip_ids)
+        filt = ~pc.field("scopus_ids").isin(skip_ids)
 
         table = dataset.to_table(filter=filt)
         sorted_table = table.sort_by([(settings.nacsos.inclusion_key, "descending")])
@@ -169,7 +169,7 @@ class TextPredictor:
         dataset = ds.dataset(self.prediction_dir, format="parquet", partitioning="hive")
 
         mult = settings.ml.pred_multiplier
-        filt = ~pc.field("scopus_id").isin(skip_ids)
+        filt = ~pc.field("scopus_ids").isin(skip_ids)
 
         for model in settings.ml.pretrained_models:
             cond = pc.field(model.label) >= int(model.threshold * mult)
@@ -206,7 +206,7 @@ def write_next_items(batch: Batch, df: pd.DataFrame):
     """Write the next batch of items"""
     with batch.items.open("w") as out:
         for name, group in df.groupby("batch_file"):
-            filter_ids = set(group["scopus_id"])
+            filter_ids = set(group["scopus_ids"])
             with open(Path(RAW_DATA) / str(name)) as f:
                 for line in f:
                     if data := ScopusAPI.translate_record(json.loads(line)):
