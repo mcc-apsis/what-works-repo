@@ -1,0 +1,83 @@
+prompt,output_data_type,attribute_id,attribute_label
+"TASK
+You will be provided with a title and abstract from a scientific research paper. Your task is to decide whether this research paper fulfills the below specified inclusion rules.
+
+GOAL
+Make a binary decision to either include or exclude the research paper based on the input in the form of the title and the abstract of a study. The goal with this title-abstract screening is 100% recall at the highest precision possible. Your decision should be Boolean (`true` or `false`). Return the answer `true`, if the title and abstract comply with the inclusion rules specified below.
+
+INCLUSION RULES
+Four inclusion criteria need to be met, to include the research paper.
+
+The abstract must be in English language.
+The research paper needs to evaluate a government policy or a trial.
+The government policy or trial evaluated needs to intend to mitigate climate change.
+The study design of the research paper needs to use experimental, quasi-experimental or inferential research methods or conduct a systematic review.
+
+The inclusion criteria 2, 3, and 4 are further specified in the following.
+
+
+2. The research paper needs to evaluate a government policy or a trial.
+
+To include a research paper it has to mention a governmental policy or intervention. This either needs to be a policy already implemented by some level of governmental organisation or as an intervention trialed in an experiment designed to inform future policy.
+
+Government policies are eligible for inclusion if they cover any laws, fiscal and monetary instruments, information campaigns, public services, diplomatic actions or provision of infrastructure provided by local, national, or supra-national bodies of government. 
+
+Trial interventions are eligible for inclusion where policy is implemented under experimental or quasi-experimental conditions. To qualify, the intervention must emulate a governmental policy instrument, meaning it must alter the incentive structure, rule structure, or information structure facing an actor (individual, household, firm, or institution) with the aim of inducing a change in behaviour. Trials that instead evaluate the technical performance or practical feasibility of a technology or practice directly, such as technology readiness trials, are not eligible. 
+
+Other interventions by non-governmental organisations, not implemented in a trial, are not eligible.
+
+Examples:
+Experiments testing different types of cookstoves are not eligible, while  trial incentivising the purchase or use of energy efficient or renewable powered cookstoves is eligible
+
+The expansion of electricity grids or cycling lanes is eligible
+
+Provision of public transport is eligible, irrespective whether it is newly introduced or expanded or whether the study assesses existing public transport systems
+
+Local practices, like community forest management, installation of renewable energies, etc. are only eligible, if the abstract clearly mentions a government involvement. Meaning that a local project in response to a government policy is eligible, while the same project started by an NGO or where the involvement by a government is not clearly mentioned will be excluded.
+
+
+3. The government policy or trial evaluated needs to intend to mitigate climate change.
+
+To include a research paper the studied policy or intervention needs to aim for one of the following policy outcomes:
+
+Reduce greenhouse gas emissions and other climate forcers: Climate policies with the aim to directly affect the amount of greenhouse gases and other climate forcers emitted to the atmosphere (e.g. carbon taxes, GHG emissions standards, GHG emission targets, etc.)
+Restore, preserve or enhance carbon sinks: Policies fostering the restoration or preservation of natural carbon sinks, like forests and moors, or the creation of new carbon sinks via biochar soil amendment, enhanced weathering, carbon capture and storage, or other novel carbon dioxide removal methods (e.g. afforestation policies).
+Reduce energy consumption: Policies in any sector regulating or incentivising a reduction in energy use or an improvement in energy efficiency (e.g. energy efficiency standards, building insulation subsidies, etc.)
+Reduce fossil fuels use or extraction: Policies targeting the demand or supply of specific or all fossil fuels (e.g. taxes on fossil fuels, removal of subsidies for fossil fuels, bans or regulations for extraction or burning of fuels, etc.)
+Increase renewable energy: Policies incentivising the production, or use, of renewable energy, as well as storage technologies that facilitate greater uptake of renewables, including financial incentives, e.g. feed-in tariffs or carbon pricing, measures to improve market access, or technology standards 
+Increase electrification: Policies in any sector fostering a switch from fossil energy sources to electricity, or expanding electrification to areas with low energy access
+Increase the use of low-carbon technologies: Policies fostering the use of low-carbon technologies and materials, like nuclear power, carbon capture and storage, or low-carbon concrete. 
+Foster modal shift in the transport sector: Policies incentivising or regulating a shift in modes of transport, i.e. from cars, motor bikes or planes to buses, trains, or active modes of transport (e.g. pricing of public transport, expansion of services in public transport, taxes or regulations on car use, expansion of cycling/walking lanes, etc.)
+Foster a change towards more plant-based diets: Policies regulating or incentivising the demand or supply of food products, in favour of plant based products in contrast to meat products (e.g. tax incentives for plant-based diets, information campaigns, etc.)
+
+The intention of a government policy cannot always easily be identified from the title and abstract. For the judgement of the intended policy outcomes general knowledge about policies needs to be considered where the information is not provided in the abstract.
+
+The intention of a policy should not be judged very narrowly. I.e. it is not relevant whether the intentions specified above are the main aim for the policy. It is sufficient that one of the intentions above are a common outcome of the policy. For example, a renewable energy subsidy may be mainly motivated to increase energy security. Still, the application of a renewable energy subsidy is associated with an increase in renewable energy, which is among the relevant policy outcomes specified above.
+
+The policy aims specified above are all defined to strengthen climate mitigation. The reversal or weakening of a relevant policy should still be included. For example, if an energy efficiency standard is removed or weakened the policy is still relevant to be included.
+
+Policies with unclear mechanisms and intentions, should be excluded. This also applies to “green”, “sustainable”, or “environmental” policies, if it is not clearly linked to climate change mitigation.
+
+A research paper also fulfills inclusion rule 3, if a trial or government policy has no intention of climate change mitigation, but is studied for one of the above specified climate mitigation outcomes.
+
+
+4. The study design of the research paper needs to use experimental, quasi-experimental or inferential research methods or conduct a systematic review.
+
+To include a research paper the study design needs to comply with the following inclusion rules. We focus on including studies that provide ex-post evaluation of trials and government policies. In particular, we include three types of study designs: quantitative ex-post evaluations of implemented policies, experimental study designs, and systematic reviews.
+
+Quantitative ex-post policy evaluations include all study designs using real world data and quantitative research methods to attribute the effect of the policy on the observed data. This includes quasi-experimental research designs (difference-in-differences, regression discontinuity designs, synthetic control methods) and other inferential research methods (panel regression designs, time-series methods, cross-sectoral studies, instrumental variable designs, etc.). It excludes purely descriptive assessments of data.
+
+Experimental study designs particularly include randomised controlled trials, before/after experiments, treatment/control designs, lab-in-the-field and survey experiments.
+
+Systematic reviews include systematic reviews, meta-analyses, umbrella reviews, meta-ethnographies, mixed-method syntheses, and realist syntheses. Other literature reviews and purely bibliometric assessments of the literature are excluded. 
+
+We exclude the following types of study:
+qualitative research designs
+purely descriptive assessments of data (descriptions of time trends, presentations of datasets, descriptive surveys, etc.)
+ex-ante modelling studies
+theoretical studies
+comments, perspectives, etc.
+
+THE RESEARCH PAPER SHOULD BE INCLUDED IF THE TITLE AND ABSTRACT INDICATE THAT THE RESEARCH PAPER FULFILLS ALL FOUR INCLUSION CRITERIA.
+
+",bool,0,

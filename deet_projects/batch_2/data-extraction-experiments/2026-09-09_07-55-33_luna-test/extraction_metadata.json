@@ -1,0 +1,53 @@
+{
+  "model": "azure/gpt-5.6-luna",
+  "total_input_tokens": 8017,
+  "total_output_tokens": 666,
+  "total_cost_usd": 0.002402,
+  "per_document": {
+    "77115": {
+      "input_tokens": 2527,
+      "output_tokens": 193,
+      "parsing_seconds": null,
+      "parsing_skipped": true,
+      "llm_call_seconds": 4.183
+    },
+    "58104067": {
+      "input_tokens": 2645,
+      "output_tokens": 256,
+      "parsing_seconds": null,
+      "parsing_skipped": true,
+      "llm_call_seconds": 4.057
+    },
+    "95294276": {
+      "input_tokens": 2845,
+      "output_tokens": 217,
+      "parsing_seconds": null,
+      "parsing_skipped": true,
+      "llm_call_seconds": 3.238
+    }
+  },
+  "total_pipeline_duration_seconds": 11.638,
+  "stage_durations_seconds": {
+    "annotation_conversion": 0.06,
+    "prompt_population": 0.002,
+    "document_preparation": 0.0,
+    "llm_extraction": 11.543,
+    "artifact_export": 0.013
+  },
+  "notes": {
+    "total_pipeline_duration_seconds": "Wall-clock time for the extraction run, from loading project data through export of experiment snapshots. Includes time spent answering the interactive config wizard when no config file is provided.",
+    "stage_durations_seconds": {
+      "annotation_conversion": "Load and normalise the gold-standard import into documents and attributes.",
+      "prompt_population": "Attach custom prompts from the project prompt CSV. Zero if skipped.",
+      "document_preparation": "Load linked documents from cache or parse/read PDF and markdown sources. See per_document.parsing_seconds.",
+      "llm_extraction": "LLM extraction for each document. See per_document.llm_call_seconds.",
+      "artifact_export": "Write prompts snapshot, config snapshot, and this metadata file."
+    },
+    "per_document": {
+      "parsing_seconds": "Parse/read time during document preparation; null when parsing_skipped is true.",
+      "parsing_skipped": "True when full text came from cache and was not parsed this run.",
+      "llm_call_seconds": "Wall-clock time for the LLM request, including local prompt setup."
+    }
+  },
+  "timestamp": "2026-09-09T07:55:44.715164Z"
+}

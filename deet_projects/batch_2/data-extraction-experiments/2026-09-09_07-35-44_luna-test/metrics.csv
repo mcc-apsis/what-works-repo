@@ -1,0 +1,6 @@
+attribute_id,attribute_label,value,extraction_run_id,metric_name
+0,incl,1.0,2026-09-09_07-35-44_luna-test,accuracy
+0,incl,0.0,2026-09-09_07-35-44_luna-test,recall
+0,incl,0.0,2026-09-09_07-35-44_luna-test,precision
+0,incl,0.0,2026-09-09_07-35-44_luna-test,f1_score
+0,incl,0.0,2026-09-09_07-35-44_luna-test,n_labels

@@ -22,3 +22,23 @@ uv run snakemake          # runs until a manual step is needed, then stops
 The workflow pauses and prints "MANUAL STEP REQUIRED" when it needs a human
 (create scope, finalise DEET run, assign docs). Do the step, write the ID to the
 named file, and re-run
+
+## Deet project development
+
+Change directory into the deet project
+
+```bash
+cd deet_projects/batch_X/
+```
+
+Run splits
+
+```bash
+deet experiments splits
+```
+
+Run experiment, referencing a prompt file and config from another batch
+
+```bash
+deet experiments evaluate --config-path ..\batch_1\gpt-luna.yaml --prompt-csv-path ..\batch_1\prompts\260902_prompt_definitions_v1.csv --run-name luna-test
+```
