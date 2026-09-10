@@ -15,5 +15,5 @@ jobs:
         with:
           enable-cache: true
       - run: sudo apt-get install -y graphviz
-      - run: uv run snakemake --rulegraph |dot -Tsvg > docs/assets/rulegraph.svg
+      - run: uv run snakemake --rulegraph --forceall all predict |dot -Tsvg > docs/assets/rulegraph.svg
       - run: uv run --extra docs mkdocs gh-deploy --force
