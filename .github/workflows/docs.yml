@@ -15,5 +15,13 @@ jobs:
         with:
           enable-cache: true
       - run: sudo apt-get install -y graphviz
-      - run: uv run snakemake --rulegraph --forceall all predict |dot -Tsvg > docs/assets/rulegraph.svg
+      - name: Generate rulegraph
+        run: |
+          set -euo pipefail
+          mkdir -p data/processed/batches/batch_0
+          touch data/processed/batches/batch_0/items.jsonl
+          uv run snakemake --rulegraph --forceall all predict > rulegraph.dot
+          test -s rulegraph.dot
+          dot -Tsvg rulegraph.dot -o docs/assets/rulegraph.svg
+          grep -q "<svg" docs/assets/rulegraph.svg
       - run: uv run --extra docs mkdocs gh-deploy --force
